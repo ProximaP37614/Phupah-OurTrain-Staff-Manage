@@ -75,12 +75,19 @@ GROUP BY
       LIMIT 1
     `).get();
 
+    const staffs = db.prepare(`
+      SELECT 
+      *
+      FROM STAFFS
+      `).all();
+
     // Return fetched data
     return {
       reservations,
       trips,
       ticket,
-      stations
+      stations,
+      staffs
     };
 
   } catch (error) {

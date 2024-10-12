@@ -9,6 +9,11 @@
   let groupedStations = {};
   console.log(trips)
 
+  function timeToSeconds(timeStr) {
+  const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+  return (hours * 3600) + (minutes * 60) + seconds;
+}
+
   for (let i = 0; i < stations.length; i++) {
     const station = stations[i];
     const stationId = station['station_id'];
@@ -56,11 +61,6 @@
     time_use: '',
     station_status: ''
   };
-
-  function timeToSeconds(timeStr) {
-  const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-  return (hours * 3600) + (minutes * 60) + seconds;
-}
 
   function editTrip(tripId) {
     editingTripId = tripId;
@@ -294,6 +294,68 @@ async function saveStation(stationId) {
   function toggleAddStationForm() {
     showAddStationForm = !showAddStationForm;
   }
+
+  // Function to save a new trip
+  async function addNewTrip() {
+    const formData = new FormData();
+    formData.append('tripId', newTrip.trip_id);
+    formData.append('start', newTrip.start);
+    formData.append('end', newTrip.end);
+    formData.append('fromDatetime', newTrip.from_datetime);
+    formData.append('arrivalTime', newTrip.arrivalTime);
+    formData.append('class', newTrip.class);
+    formData.append('seats', newTrip.seats);
+    formData.append('staff_id', newTrip.staff_id);
+
+    try {
+      const response = await fetch('/tor/?/addTrip', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.type == 'success') {
+        trips = [...trips, newTrip];  // Add the new trip to the list
+        alert('Trip added successfully!');
+        showAddTripForm = false;  // Hide the form after successful addition
+      } else {
+        alert('Error adding trip.');
+      }
+    } catch (error) {
+      console.error('Error adding trip:', error);
+      alert('An error occurred while adding the trip.');
+    }
+  }
+
+  async function addNewStation() {
+    const formData = new FormData();
+    formData.append('station_id', newStation.station_id);
+    formData.append('station_name', newStation.station_name);
+    formData.append('station_address', newStation.station_address);
+    formData.append('time_use', newStation.time_use);
+    formData.append('station_status', newStation.station_status);
+
+    try {
+      const response = await fetch('/tor/?/addStation', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.type == 'success') {
+        stations = [...stations, newStation];  // Add the new trip to the list
+        alert('Station added successfully!');
+        showAddStationForm = false;  // Hide the form after successful addition
+      } else {
+        alert('Error adding station.');
+      }
+    } catch (error) {
+      console.error('Error adding station:', error);
+      alert('An error occurred while adding the station.');
+    }
+  }
 </script>
 
 <!-- Main content -->
@@ -382,6 +444,43 @@ async function saveStation(stationId) {
     <div class="flex justify-center items-center">
       <button on:click={toggleAddTripForm} class="bg-[#102C57] text-white w-full mt-10 sm:w-1/6 px-2 py-2 sm:px-4 sm:py-2 rounded">เพิ่มเที่ยวโดยสาร</button>
     </div>
+
+    <!-- Add Trip Form -->
+    {#if showAddTripForm}
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-4">เพิ่มเที่ยวโดยสารใหม่</h3>
+        <table class="table-auto w-full text-left border-collapse whitespace-nowrap">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="px-2 py-2 sm:px-4 sm:py-2">รหัสเที่ยวโดยสาร</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">ต้นทาง</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">ปลายทาง</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">วัน / เวลาที่ออก</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">เวลาที่ถึง</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">ชั้นโดยสาร</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">จำนวนที่นั่ง</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">พนักงานตรวจ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="even:bg-gray-100">
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newTrip.trip_id} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newTrip.start} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newTrip.end} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="datetime-local" bind:value={newTrip.from_datetime} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newTrip.arrivalTime} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newTrip.class} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="number" bind:value={newTrip.seats} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newTrip.staff_id} class="w-full border p-1" /></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="flex justify-end mt-4">
+          <button on:click={addNewTrip} class="bg-green-500 text-white px-4 py-2 rounded">บันทึก</button>
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -464,5 +563,36 @@ async function saveStation(stationId) {
     <div class="flex justify-center items-center">
       <button on:click={toggleAddStationForm} class="bg-[#102C57] text-white w-full mt-10 sm:w-1/6 px-2 py-2 sm:px-4 sm:py-2 rounded">เพิ่มสถานีรถไฟ</button>
     </div>
+
+    <!-- Add Trip Form -->
+    {#if showAddStationForm}
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-4">เพิ่มเที่ยวโดยสารใหม่</h3>
+        <table class="table-auto w-full text-left border-collapse whitespace-nowrap">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="px-2 py-2 sm:px-4 sm:py-2">รหัสสถานี</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">ชื่อสถานี</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">ที่อยู่</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">ระยะเวลา</th>
+              <th class="px-2 py-2 sm:px-4 sm:py-2">สถานะการใช้งาน</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="even:bg-gray-100">
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newStation.station_id} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newStation.station_name} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newStation.station_address} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="text" bind:value={newStation.time_use} class="w-full border p-1" /></td>
+              <td class="border px-2 py-2 sm:px-4 sm:py-2"><input type="number" bind:value={newStation.station_status} class="w-full border p-1" /></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="flex justify-end mt-4">
+          <button on:click={addNewStation} class="bg-green-500 text-white px-4 py-2 rounded">บันทึก</button>
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
